@@ -1,0 +1,4 @@
+fe
+==
+
+log self life
