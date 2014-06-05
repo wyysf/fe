@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>类似google的图片搜索排版效果js</title>
+    <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        #wrap {
+            margin: 20px 0 0 10px;
+            background-color: #eee;
+            overflow: hidden;
+        }
+
+        .singlebox {
+            float: left;
+            position: relative;
+            margin-bottom: 10px;
+            margin-right: 10px;
+            overflow: hidden;
+        }
+        .colspan {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="wrap">
+</div>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript">
+    //
+    var isometry = {
+        init:function(ele,oriArr){//初始化
+            window.oWrap = $(ele);
+            window.winW = $(window).width() - 10;
+            window.sH = isometry.getMin(oriArr);
+            window.sliceData = isometry.caleWidth(oriArr);
+            setTimeout(function(){
+                oWrap.empty();
+                isometry.render(sliceData,oriArr);
+            },0);
+        },
+        getMin:function(arr){//获取最小的一个作为标准
+            var minH = 10000000;
+            $.each(arr, function (i, el) {
+                if (parseInt(el.height) < minH) {
+                    minH = parseInt(el.height);
+                }
+            });
+            return minH;
+        },
+        caleWidth:function(arr){//计算分组
+            var sliceData = [],
+                hook = 0,
+                allW = 0,
+                index;
+            $.each(arr, function (i, el) {
+                var per = sH / parseInt(el.height),
+                    nowW = per * parseInt(el.width);
+                    allW = allW + nowW;
+                if (allW >= winW) {
+                    index = i + 1;
+                    sliceData.push({"start":hook, "end":index, "width":allW,"delta":10 * (index - hook)});
+                    hook = index;
+                    allW = 0;
+                }
+            });
+            return sliceData;
+        },
+        render:function(sliceData,arr){//计算渲染
+            $.each(sliceData, function (j, element) {
+                var tH = Math.floor(sH * (winW - element.delta) / element.width),
+                    str = '<div class="colspan">';
+                $.each(arr.slice(element.start, element.end), function (i, el) {
+                    var per = tH / parseInt(el.height),
+                        nowW = Math.floor(per * parseInt(el.width));
+                    str += '<div class="singlebox" style="width:' + nowW + 'px;height:' + tH + 'px;" ><img style="width: ' + nowW + 'px;height: ' + tH + 'px;" src="' + el.image + '"></div>'
+                });
+                str += "</div>";
+                oWrap.append(str);
+            });
+        }
+    };
+    //resize浏览器窗口
+    $(window).resize(function(){
+        isometry.init("#wrap",json);
+    });
+    //获取数据调用
+    $.getJSON("http://www.wookmark.com/api/json/popular?callback=?",{page:Math.round(Math.random() * 10)},function(data){
+        window.json = data;
+        isometry.init("#wrap",json);
+    });
+</script>
+</body>
+</html>
